@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Networking Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container fade-in">
+
+    <h1 class="title">🔗 Peer Connect</h1>
+    <p class="subtitle">Create a room or join one to start a secure P2P session.</p>
+
+    <div class="card">
+
+        <button class="btn primary" onclick="createRoom()">
+            ➕ Create a Room
+        </button>
+
+        <div class="divider">OR</div>
+
+        <input id="roomInput" class="input" placeholder="Enter room code...">
+
+        <button class="btn" onclick="joinRoom()">
+            Join Room
+        </button>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
