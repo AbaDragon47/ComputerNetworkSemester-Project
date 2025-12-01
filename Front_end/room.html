@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Room</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="room-container fade-in">
+
+    <h2 id="roomHeader">Room</h2>
+
+    <div class="status-box">
+        <span>Connection Status:</span>
+        <span id="status" class="status disconnected">Disconnected</span>
+    </div>
+
+    <div class="chat-card">
+        <div id="messages" class="messages"></div>
+
+        <div class="chat-input-row">
+            <input id="chatInput" class="input" placeholder="Type a message..."
+                onkeydown="if(event.key==='Enter') sendMessage()">
+            <button class="btn small" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
