@@ -1,10 +1,31 @@
+const API_BASE = `http://${window.location.hostname}:8000`;
 //---------------------------------------------
 // PAGE REDIRECTS
 //---------------------------------------------
-function createRoom() {
+async function createRoom() {
     // Person A will replace this with a backend call
-    const random = Math.random().toString(36).substring(2, 8);
-    window.location.href = `room.html?room=${random}`;
+    //const random = Math.random().toString(36).substring(2, 8);
+    //window.location.href = `room.html?room=${random}`;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/rooms`, {
+            method: "POST"
+        });
+
+        if (!res.ok) {
+            alert("Failed to create room");
+            return;
+        }
+
+        const data = await res.json();
+        const roomId = data.room_id;
+
+        // Go to room page with code in query string
+        window.location.href = `room.html?room=${encodeURIComponent(roomId)}`;
+    } catch (err) {
+        console.error("Error creating room:", err);
+        alert("Error creating room. Is the backend running on port 8000?");
+    }
 }
 
 function joinRoom() {
