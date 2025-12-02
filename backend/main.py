@@ -1,4 +1,6 @@
 import secrets
+import json
+import uuid
 from typing import Dict, Set
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -21,6 +23,9 @@ app.add_middleware(
 
 # room_id -> set of connected websockets
 rooms: Dict[str, Set[WebSocket]] = {}
+
+# websocket -> client_id
+client_ids: Dict[WebSocket, str] = {}
 
 
 @app.get("/")
@@ -51,7 +56,10 @@ async def get_room(room_id: str):
     Useful for frontend when someone clicks a link.
     """
     exists = room_id in rooms
-    return {"room_id": room_id, "exists": exists, "num_clients": len(rooms.get(room_id, []))}
+    return {"room_id": room_id,
+            "exists": exists,
+            "num_clients": len(rooms.get(room_id, []))
+            }
 
 
 @app.websocket("/ws/{room_id}")
@@ -70,14 +78,36 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
         rooms[room_id] = set()
 
     rooms[room_id].add(websocket)
+    client_id = str(uuid.uuid4())
+    client_ids[websocket] = client_id
+
     print(f"[INFO] Client joined room {room_id}. Total: {len(rooms[room_id])}")
+
+
+    # tell the client its id and current room
+    await websocket.send_text(json.dumps({
+        "type": "system",
+        "event": "welcome",
+        "client_id": client_id,
+        "room_id": room_id,
+    }))
+
+    # optional: notify others that someone joined
+    await broadcast_room(room_id, 
+                         json.dumps({
+                             "type": "system",
+                             "event": "join",
+                             "client_id": client_id,
+                         }),
+                           sender=websocket)   
+
 
     try:
         while True:
             data = await websocket.receive_text()
             # Here you can later parse JSON, enforce "type", "sender", etc.
             # For now, just broadcast raw text to others in the same room.
-            await broadcast_to_room(room_id, data, sender=websocket)
+            await broadcast_room(room_id, data, sender=websocket)
     except WebSocketDisconnect:
         # Remove connection from room on disconnect
         rooms[room_id].remove(websocket)
@@ -88,7 +118,7 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
             print(f"[INFO] Room {room_id} deleted (empty).")
 
 
-async def broadcast_to_room(room_id: str, message: str, sender: WebSocket | None = None):
+async def broadcast_room(room_id: str, message: str, sender: WebSocket | None = None):
     """
     Send `message` to all clients in `room_id` except the optional sender.
     """
