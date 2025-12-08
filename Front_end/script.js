@@ -1,9 +1,9 @@
-const API_BASE = `http://${window.location.hostname}:8000`;//--> for testing one 
+//const API_BASE = `http://${window.location.hostname}:8000`;//--> for testing one 
 //device
 
-/*const BACKEND_HOST = window.location.hostname; // same host as frontend
+const BACKEND_HOST = window.location.hostname; // same host as frontend
 const API_BASE = `http://${BACKEND_HOST}:8000`;
-const WS_BASE  = `ws://${BACKEND_HOST}:8000`;*/
+const WS_BASE  = `ws://${BACKEND_HOST}:8000`;
 //---------------------------------------------
 // PAGE REDIRECTS
 //---------------------------------------------
@@ -56,11 +56,19 @@ if (window.location.pathname.includes("room.html")) {
     let ws = null;
 
     function connectWebSocket() {
-        //ws = new WebSocket(`${WS_BASE}/ws/${room}`);
-        ws = new WebSocket(`ws://localhost:8000/ws/${room}`);
+        
+        //ws = new WebSocket(`ws://localhost:8000/ws/${room}`);
+
+        const url = `${WS_BASE}/ws/${room}`;
+        console.log("Connecting WebSocket to:", url);
+        ws = new WebSocket(url);
 
         ws.onopen = () => setStatus(true);
         ws.onclose = () => setStatus(false);
+        ws.onerror = (err) => {
+        console.error("WebSocket error:", err);
+        setStatus(false);
+    };
 
         ws.onmessage = event => {
             const data = event.data;
