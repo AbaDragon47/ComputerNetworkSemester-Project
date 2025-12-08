@@ -1,4 +1,9 @@
-const API_BASE = `http://${window.location.hostname}:8000`;
+//const API_BASE = `http://${window.location.hostname}:8000`;//--> for testing one 
+//device
+
+const BACKEND_HOST = window.location.hostname; // same host as frontend
+const API_BASE = `http://${BACKEND_HOST}:8000`;
+const WS_BASE  = `ws://${BACKEND_HOST}:8000`;
 //---------------------------------------------
 // PAGE REDIRECTS
 //---------------------------------------------
@@ -50,15 +55,56 @@ if (window.location.pathname.includes("room.html")) {
     //---------------------------------------------
     let ws = null;
 
+    function addSystemMessage(text) {
+        const div = document.createElement("div");
+        div.className = "message system";   // you can style this in CSS
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
     function connectWebSocket() {
-        ws = new WebSocket(`ws://localhost:8000/ws/${room}`);
+        
+        //ws = new WebSocket(`ws://localhost:8000/ws/${room}`);
+
+        const url = `${WS_BASE}/ws/${room}`;
+        console.log("Connecting WebSocket to:", url);
+        ws = new WebSocket(url);
 
         ws.onopen = () => setStatus(true);
         ws.onclose = () => setStatus(false);
+        ws.onerror = (err) => {
+            console.error("WebSocket error:", err);
+            setStatus(false);
+        };
+
 
         ws.onmessage = event => {
-            const data = event.data;
-            addMessage(data, "them");
+            let raw = event.data;
+
+            // Try to parse as JSON for system messages
+            try {
+                const msg = JSON.parse(raw);
+
+                if (msg.type === "system") {
+                    if (msg.event === "join") {
+                        addSystemMessage(`Peer joined the room.`);
+                    } else if (msg.event === "leave") {
+                        addSystemMessage(`Peer left the room.`);
+                    } else if (msg.event === "welcome") {
+                        console.log("Assigned client_id:", msg.client_id);
+                    }
+                    return; // don't show system JSON as normal chat
+                }
+
+                // If later you send JSON chat messages, you can handle them here
+                // e.g., if (msg.type === "chat") addMessage(msg.text, "them");
+            } catch (e) {
+                // Not JSON => treat as normal chat text
+            }
+
+        // Fallback: plain text chat (what you have now)
+        addMessage(raw, "them");
         };
     }
 
