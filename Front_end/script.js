@@ -56,7 +56,8 @@ if (window.location.pathname.includes("room.html")) {
     let ws = null;
 
     function connectWebSocket() {
-        ws = new WebSocket(`${WS_BASE}/ws/${room}`);
+        //ws = new WebSocket(`${WS_BASE}/ws/${room}`);
+        ws = new WebSocket(`ws://localhost:8000/ws/${room}`);
 
         ws.onopen = () => setStatus(true);
         ws.onclose = () => setStatus(false);
