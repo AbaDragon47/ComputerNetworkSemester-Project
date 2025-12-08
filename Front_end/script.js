@@ -1,4 +1,9 @@
-const API_BASE = `http://${window.location.hostname}:8000`;
+//const API_BASE = `http://${window.location.hostname}:8000`;--> for testing one 
+//device
+
+const BACKEND_HOST = window.location.hostname; // same host as frontend
+const API_BASE = `http://${BACKEND_HOST}:8000`;
+const WS_BASE  = `ws://${BACKEND_HOST}:8000`;
 //---------------------------------------------
 // PAGE REDIRECTS
 //---------------------------------------------
@@ -51,7 +56,7 @@ if (window.location.pathname.includes("room.html")) {
     let ws = null;
 
     function connectWebSocket() {
-        ws = new WebSocket(`ws://localhost:8000/ws/${room}`);
+        ws = new WebSocket(`${WS_BASE}/ws/${room}`);
 
         ws.onopen = () => setStatus(true);
         ws.onclose = () => setStatus(false);
